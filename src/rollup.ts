@@ -144,7 +144,7 @@ export async function build(cwd: string, command: string) {
           JSON.stringify(pkg, null, 2)
         );
 
-        await execa('yarn', [], {
+        await execa.command('yarn install --no-progress --non-interactive', {
           cwd: join(cwd, outDirs.prod),
           stdio: 'inherit',
         });
