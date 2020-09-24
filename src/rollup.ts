@@ -151,9 +151,13 @@ export async function build(cwd: string, command: string) {
         spinner.succeed('Packaging successful');
       }
     } else if (command === 'watch') {
+      spinner.stop();
       const watcher = watch({ ...inputOptions, output: outputOptions });
       watcher.on('event', (event) => {
-        console.log(event.code);
+        if (event.code === 'START')
+          spinner.start('Change detected, rebuilding ...');
+        if (event.code === 'END') spinner.stop();
+        if (event.code === 'ERROR') spinner.fail(JSON.stringify(event.error));
       });
     }
   } catch (err) {
