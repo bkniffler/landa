@@ -90,7 +90,7 @@ export async function build(cwd: string, command: string) {
             {}
           )
         ),
-        commonjs({ sourceMap: isProduction }),
+        commonjs({ sourceMap: true }),
         json({}),
         babel({
           extensions,
@@ -120,7 +120,7 @@ export async function build(cwd: string, command: string) {
     const outputOptions = {
       file: join(cwd, isProduction ? outDirs.prod : outDirs.dev, 'index.js'),
       format: 'cjs' as const,
-      sourcemap: isProduction,
+      sourcemap: true,
     };
 
     if (command === 'build' || command === 'invoke' || command === 'start') {
