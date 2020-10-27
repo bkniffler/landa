@@ -123,7 +123,12 @@ export async function build(cwd: string, command: string) {
       sourcemap: true,
     };
 
-    if (command === 'build' || command === 'invoke' || command === 'start') {
+    if (
+      command === 'build' ||
+      command === 'build-dev' ||
+      command === 'invoke' ||
+      command === 'start'
+    ) {
       const bundle = await rollup(inputOptions);
       // const { output } = await bundle.generate(outputOptions);
       await bundle.write(outputOptions);
