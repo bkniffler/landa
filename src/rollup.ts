@@ -1,9 +1,9 @@
-import { rollup, watch } from 'rollup';
+import { OutputOptions, rollup, RollupOptions, watch } from 'rollup';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
-//@ts-ignore
-import babel from 'rollup-plugin-babel';
+import babel from '@rollup/plugin-babel';
+import typescript from 'rollup-plugin-typescript2';
 import ora from 'ora';
 import json from '@rollup/plugin-json';
 import alias from '@rollup/plugin-alias';
@@ -21,7 +21,13 @@ const dotenv = require('dotenv').config({
 
 const workspacePackages = getWorkspaces();
 const extensions = ['.js', '.ts', '.json'];
-const entryPaths = ['src/index.ts', 'src/index.js', 'index.js'];
+const entryPaths = [
+  'src-lib/index.ts',
+  'src-lib/index.js',
+  'src/index.ts',
+  'src/index.js',
+  'index.js',
+];
 const outDirs = { prod: 'lib/prod', dev: 'lib/dev' };
 function findEntry(cwd: string) {
   return entryPaths
@@ -53,8 +59,8 @@ function getAllDependencies(dependencies: any = {}): [any, string[]] {
 
 export async function build(cwd: string, command: string) {
   const isProduction = command === 'build';
-
   const pkg = require(join(cwd, 'package.json'));
+  const compileTS = pkg.landa?.compileTS;
   const [dependencies, workspaces] = getAllDependencies(pkg.dependencies);
   const input = findEntry(cwd);
   if (!input) {
@@ -63,7 +69,7 @@ export async function build(cwd: string, command: string) {
 
   const spinner = ora().start(`Building ${cwd}`);
   try {
-    const inputOptions = {
+    const inputOptions: RollupOptions = {
       input,
       treeshake: isProduction,
       external: [...builtIn, 'aws-sdk'].concat(Object.keys(dependencies)),
@@ -92,6 +98,7 @@ export async function build(cwd: string, command: string) {
         ),
         commonjs({ sourceMap: true }),
         json({}),
+        compileTS && typescript(),
         babel({
           extensions,
           include: [cwd, ...workspaces].map((path) => join(path, 'src/**/*')),
@@ -106,10 +113,15 @@ export async function build(cwd: string, command: string) {
                 },
               },
             ],
-            require.resolve('@babel/preset-typescript'),
+            !compileTS && require.resolve('@babel/preset-typescript'),
           ],
           plugins: [
-            require.resolve('@babel/plugin-proposal-decorators'),
+            [
+              require.resolve('@babel/plugin-proposal-decorators'),
+              {
+                legacy: true,
+              },
+            ],
             require.resolve('@babel/plugin-proposal-class-properties'),
             require.resolve('babel-plugin-source-map-support'),
             require.resolve('@babel/plugin-proposal-optional-chaining'),
@@ -118,7 +130,7 @@ export async function build(cwd: string, command: string) {
         isProduction && terser(),
       ],
     };
-    const outputOptions = {
+    const outputOptions: OutputOptions = {
       file: join(cwd, isProduction ? outDirs.prod : outDirs.dev, 'index.js'),
       format: 'cjs' as const,
       sourcemap: true,
