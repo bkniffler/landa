@@ -109,6 +109,7 @@ export async function build(cwd: string, command: string) {
             require.resolve('@babel/preset-typescript'),
           ],
           plugins: [
+            require.resolve('@babel/plugin-proposal-decorators'),
             require.resolve('@babel/plugin-proposal-class-properties'),
             require.resolve('babel-plugin-source-map-support'),
             require.resolve('@babel/plugin-proposal-optional-chaining'),
