@@ -4,7 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 //@ts-ignore
 import babel from 'rollup-plugin-babel';
-import babel2 from '@rollup/plugin-babel';
+import babel2, { RollupBabelInputPluginOptions } from '@rollup/plugin-babel';
 import typescript from 'rollup-plugin-typescript2';
 import ora from 'ora';
 import json from '@rollup/plugin-json';
@@ -71,6 +71,26 @@ export async function build(config: LandaConfig) {
     if (!config.typeCheck) {
       presets.push(require.resolve('@babel/preset-typescript'));
     }
+    const babelConfig: RollupBabelInputPluginOptions = {
+      extensions,
+      babelHelpers: 'bundled',
+      include: [config.cwd, ...workspaces].map((path) =>
+        resolve(path, 'src/**/*')
+      ),
+      babelrc: false,
+      presets,
+      plugins: [
+        [
+          require.resolve('@babel/plugin-proposal-decorators'),
+          {
+            legacy: true,
+          },
+        ],
+        require.resolve('@babel/plugin-proposal-class-properties'),
+        require.resolve('babel-plugin-source-map-support'),
+        require.resolve('@babel/plugin-proposal-optional-chaining'),
+      ],
+    };
     const inputOptions: RollupOptions = {
       input,
       treeshake: isProduction,
@@ -100,25 +120,7 @@ export async function build(config: LandaConfig) {
         ),
         commonjs({ sourceMap: true }),
         json({}),
-        (config.typeCheck ? babel2 : babel)({
-          extensions,
-          include: [config.cwd, ...workspaces].map((path) =>
-            resolve(path, 'src/**/*')
-          ),
-          babelrc: false,
-          presets,
-          plugins: [
-            [
-              require.resolve('@babel/plugin-proposal-decorators'),
-              {
-                legacy: true,
-              },
-            ],
-            require.resolve('@babel/plugin-proposal-class-properties'),
-            require.resolve('babel-plugin-source-map-support'),
-            require.resolve('@babel/plugin-proposal-optional-chaining'),
-          ],
-        }),
+        (config.typeCheck ? babel2 : babel)(babelConfig),
         config.typeCheck && typescript(),
         isProduction && terser(),
       ],
