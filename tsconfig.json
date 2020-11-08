@@ -7,7 +7,6 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "sourceRoot": "src",
-    "experimentalDecorators": true,
     "outDir": "lib",
     "skipLibCheck": true
   },

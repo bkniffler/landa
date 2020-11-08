@@ -1,37 +1,32 @@
-require('./local');
-const { resolve } = require('path');
-const fs = require('fs');
-const crypto = require('crypto');
-const execa = require('execa');
-const express = require('express');
-const app = express();
-const port = 4004;
+import { resolve } from 'path';
+import { ReadStream } from 'fs';
+import crypto from 'crypto';
+import express from 'express';
+import { LandaConfig } from '../config';
 
-process.env.FRONTEND_URI = 'http://localhost:4000';
-const dirname = resolve(__dirname, '..');
-(async () => {
-  execa('yarn', ['watch'], {
-    cwd: dirname,
-    stdio: 'inherit',
-  });
-  const watchFile = resolve(dirname, 'lib/dev/index.js');
-  let lastHash = '';
+export function serve(config: LandaConfig) {
+  const app = express();
 
-  function rawBody(req, res, next) {
+  for (let key in config.env) {
+    process.env[key] = config.env[key];
+  }
+
+  const watchFile = resolve(config.devDir, 'index.js');
+  let lastHash: string = '';
+
+  app.use((req, res, next) => {
     req.setEncoding('utf8');
-    req.rawBody = '';
+    (req as any).rawBody = '';
     req.on('data', function (chunk) {
-      req.rawBody += chunk;
+      (req as any).rawBody += chunk;
     });
     req.on('end', function () {
       next();
     });
-  }
-
-  app.use(rawBody);
+  });
   app.use(async (req, res) => {
     let handled = false;
-    function onResponse(result) {
+    function onResponse(result: any) {
       res
         .set({
           'Content-Type': 'application/json',
@@ -52,21 +47,21 @@ const dirname = resolve(__dirname, '..');
         {
           httpMethod: req.method,
           path: req.path,
-          body: req.rawBody,
+          body: (req as any).rawBody,
           headers: req.headers,
           queryStringParameters: req.query,
         },
         {
           awsRequestId: +new Date() + '',
-          succeed: (result) => {
+          succeed: (result: any) => {
             handled = true;
             onResponse(result);
           },
         },
-        (err, res) => {
+        (err: any, res: any) => {
           handled = true;
           onResponse(err || res);
-        },
+        }
       );
       if (!handled && result) onResponse(result);
     } catch (err) {
@@ -75,19 +70,19 @@ const dirname = resolve(__dirname, '..');
       onResponse(err);
     }
   });
-  app.listen(port, () => {
-    console.log(`API listening at http://localhost:${port}`);
+  app.listen(config.servePort, () => {
+    console.log(`API listening at http://localhost:${config.servePort}`);
   });
-})();
+}
 
-function fileHash(filename, algorithm = 'md5') {
+function fileHash(filename: string, algorithm = 'md5'): Promise<string> {
   return new Promise((resolve, reject) => {
     // Algorithm depends on availability of OpenSSL on platform
     // Another algorithms: 'sha1', 'md5', 'sha256', 'sha512' ...
     let shasum = crypto.createHash(algorithm);
     try {
-      let s = fs.ReadStream(filename);
-      s.on('data', function (data) {
+      let s = ReadStream.from(filename);
+      s.on('data', (data) => {
         shasum.update(data);
       });
       // making digest

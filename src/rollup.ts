@@ -1,39 +1,28 @@
 import { OutputOptions, rollup, RollupOptions, watch } from 'rollup';
+import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
-import resolve from '@rollup/plugin-node-resolve';
-import babel from '@rollup/plugin-babel';
+//@ts-ignore
+import babel from 'rollup-plugin-babel';
+import babel2 from '@rollup/plugin-babel';
 import typescript from 'rollup-plugin-typescript2';
 import ora from 'ora';
 import json from '@rollup/plugin-json';
 import alias from '@rollup/plugin-alias';
 import builtIn from 'builtin-modules';
-import { existsSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { writeFileSync } from 'fs';
+import { resolve } from 'path';
 import { terser } from 'rollup-plugin-terser';
 import execa from 'execa';
-import { invoke } from './invoke';
 import { getWorkspaces, rootFolder } from './get-workspaces';
+import { LandaConfig } from './config';
 
 const dotenv = require('dotenv').config({
-  path: join(rootFolder, '.env'),
+  path: resolve(rootFolder, '.env'),
 });
 
 const workspacePackages = getWorkspaces();
 const extensions = ['.js', '.ts', '.json'];
-const entryPaths = [
-  'src-lib/index.ts',
-  'src-lib/index.js',
-  'src/index.ts',
-  'src/index.js',
-  'index.js',
-];
-const outDirs = { prod: 'lib/prod', dev: 'lib/dev' };
-function findEntry(cwd: string) {
-  return entryPaths
-    .map((entry) => join(cwd, entry))
-    .find((entry) => existsSync(entry));
-}
 function getAllDependencies(dependencies: any = {}): [any, string[]] {
   let workspaces: string[] = [];
   let workspaceNames: string[] = [];
@@ -57,18 +46,31 @@ function getAllDependencies(dependencies: any = {}): [any, string[]] {
   return [dependencies, workspaces];
 }
 
-export async function build(cwd: string, command: string) {
-  const isProduction = command === 'build';
-  const pkg = require(join(cwd, 'package.json'));
-  const compileTS = pkg.landa?.compileTS;
-  const [dependencies, workspaces] = getAllDependencies(pkg.dependencies);
-  const input = findEntry(cwd);
-  if (!input) {
-    throw new Error(`No input found, tried: \n -${entryPaths.join('\n -')}`);
-  }
+export async function build(config: LandaConfig) {
+  const isProduction = config.command === 'build' && !config.forceDev;
+  const [dependencies, workspaces] = getAllDependencies(
+    config.packageJSON.dependencies
+  );
+  const input = config.entryFile;
 
-  const spinner = ora().start(`Building ${cwd}`);
+  const spinner = ora().start(
+    `Building ${config.cwd}, production ${isProduction}`
+  );
   try {
+    const presets: (any[] | string)[] = [
+      [
+        require.resolve('@babel/preset-env'),
+        {
+          modules: false,
+          targets: {
+            node: '12',
+          },
+        },
+      ],
+    ];
+    if (!config.typeCheck) {
+      presets.push(require.resolve('@babel/preset-typescript'));
+    }
     const inputOptions: RollupOptions = {
       input,
       treeshake: isProduction,
@@ -78,12 +80,12 @@ export async function build(cwd: string, command: string) {
         alias({
           entries: workspaces.map((path) => {
             return {
-              find: require(join(path, 'package.json')).name,
-              replacement: join(path, 'src'),
+              find: require(resolve(path, 'package.json')).name,
+              replacement: resolve(path, 'src'),
             };
           }),
         }),
-        resolve({
+        nodeResolve({
           extensions,
           preferBuiltins: true,
         }),
@@ -98,23 +100,13 @@ export async function build(cwd: string, command: string) {
         ),
         commonjs({ sourceMap: true }),
         json({}),
-        compileTS && typescript(),
-        babel({
+        (config.typeCheck ? babel2 : babel)({
           extensions,
-          include: [cwd, ...workspaces].map((path) => join(path, 'src/**/*')),
+          include: [config.cwd, ...workspaces].map((path) =>
+            resolve(path, 'src/**/*')
+          ),
           babelrc: false,
-          presets: [
-            [
-              require.resolve('@babel/preset-env'),
-              {
-                modules: false,
-                targets: {
-                  node: '12',
-                },
-              },
-            ],
-            !compileTS && require.resolve('@babel/preset-typescript'),
-          ],
+          presets,
           plugins: [
             [
               require.resolve('@babel/plugin-proposal-decorators'),
@@ -127,48 +119,40 @@ export async function build(cwd: string, command: string) {
             require.resolve('@babel/plugin-proposal-optional-chaining'),
           ],
         }),
+        config.typeCheck && typescript(),
         isProduction && terser(),
       ],
     };
     const outputOptions: OutputOptions = {
-      file: join(cwd, isProduction ? outDirs.prod : outDirs.dev, 'index.js'),
+      file: resolve(isProduction ? config.outDir : config.devDir, 'index.js'),
       format: 'cjs' as const,
       sourcemap: true,
     };
 
-    if (
-      command === 'build' ||
-      command === 'build-dev' ||
-      command === 'invoke' ||
-      command === 'start'
-    ) {
+    if (config.command === 'build') {
       const bundle = await rollup(inputOptions);
       // const { output } = await bundle.generate(outputOptions);
       await bundle.write(outputOptions);
       spinner.succeed('Build successful');
-      if (command === 'invoke') {
-        await invoke(pkg.name, cwd, `${outDirs.dev}/index.js`);
-        // wtf.dump();
-      } else if (command === 'start') {
-        require(join(cwd, outDirs.dev, 'index.js'));
-      } else {
-        spinner.start('Packaging');
-        pkg.dependencies = { ...dependencies };
-        pkg.name = `${pkg.name}-lambda`;
-        delete pkg.devDependencies;
-        delete pkg.scripts;
-        writeFileSync(
-          join(cwd, outDirs.prod, 'package.json'),
-          JSON.stringify(pkg, null, 2)
-        );
+      spinner.start('Packaging');
+      config.packageJSON.dependencies = { ...dependencies };
+      config.packageJSON.name = `${config.packageJSON.name}-lambda`;
+      delete config.packageJSON.devDependencies;
+      delete config.packageJSON.scripts;
+      writeFileSync(
+        resolve(config.outDir, 'package.json'),
+        JSON.stringify(config.packageJSON, null, 2)
+      );
 
+      if (isProduction) {
+        spinner.start('Installing dependencies ...');
         await execa.command('yarn install --no-progress --non-interactive', {
-          cwd: join(cwd, outDirs.prod),
+          cwd: config.outDir,
           stdio: 'inherit',
         });
-        spinner.succeed('Packaging successful');
       }
-    } else if (command === 'watch') {
+      spinner.succeed('Packaging successful');
+    } else if (config.command === 'watch') {
       spinner.stop();
       const watcher = watch({ ...inputOptions, output: outputOptions });
       watcher.on('event', (event) => {
@@ -180,7 +164,7 @@ export async function build(cwd: string, command: string) {
     }
   } catch (err) {
     spinner.fail('Error');
-    console.info('Error building', cwd, command);
+    console.info('Error building', config.cwd, config.command);
     console.error(err);
   }
 }
