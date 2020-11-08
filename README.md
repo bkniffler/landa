@@ -124,27 +124,26 @@ Add optional configuration options to your `package.json > landa`
 ```json
 // package.json
 {
-    ...
-    landa: {
-        // Path to a js script thats run before anything, e.g. to setup env
-        preload: "./index.js",
-        // Environment variables, especially for dev server
-        env: { DB_URI: "http://localhost:8081" },
-        // Dev server port
-        servePort: 4004,
-        // Enable type-checking (disabled by default!)
-        typeCheck: true,
-        // Outdir for production builds
-        outDir: "./lib/prod",
-        // Outdir for dev builds
-        devDir:"./lib/dev",
-        // Path to a js/json file that exports invocation config
-        invokeConfigPath: "./invoke.js",
-        // Folder that invocation output is written to
-        invokeOutDir: "./out",
-        // Entry, default is any of "./src/index.ts" / "./src/index.js" / "./index.ts" / "./index.js"
-        entryFile: "./src/index.ts"
-    }
+  "landa": {
+    // Path to a js script thats run before anything, e.g. to setup env
+    "preload": "./index.js",
+    // Environment variables, especially for dev server
+    "env": { "DB_URI": "http://localhost:8081" },
+    // Dev server port
+    "servePort": 4004,
+    // Enable type-checking (disabled by default!)
+    "typeCheck": true,
+    // Outdir for production builds
+    "outDir": "./lib/prod",
+    // Outdir for dev builds
+    "devDir": "./lib/dev",
+    // Path to a js/json file that exports invocation config
+    "invokeConfigPath": "./invoke.js",
+    // Folder that invocation output is written to
+    "invokeOutDir": "./out",
+    // Entry, default is any of "./src/index.ts" / "./src/index.js" / "./index.ts" / "./index.js"
+    "entryFile": "./src/index.ts"
+  }
 }
 ```
 
