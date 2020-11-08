@@ -121,7 +121,7 @@ yarn run invoke helloWorld
 
 Add optional configuration options to your `package.json > landa`
 
-```json
+```js
 // package.json
 {
   "landa": {
