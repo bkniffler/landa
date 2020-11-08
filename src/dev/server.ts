@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import { ReadStream } from 'fs';
+import { createReadStream } from 'fs';
 import crypto from 'crypto';
 import express from 'express';
 import { LandaConfig } from '../config';
@@ -81,7 +81,7 @@ function fileHash(filename: string, algorithm = 'md5'): Promise<string> {
     // Another algorithms: 'sha1', 'md5', 'sha256', 'sha512' ...
     let shasum = crypto.createHash(algorithm);
     try {
-      let s = ReadStream.from(filename);
+      let s = createReadStream(filename);
       s.on('data', (data) => {
         shasum.update(data);
       });
