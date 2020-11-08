@@ -2,7 +2,7 @@
   "name": "landa",
   "version": "1.3.6",
   "main": "bin/index.js",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "bin": {
     "landa": "bin/index.js"
   },
