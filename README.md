@@ -22,12 +22,18 @@ Landa supports most libraries that run on AWS lambda / nodeJS. These frameworks 
 
 ## Getting started
 
+### Installation
+
 ```bash
 yarn install landa
 # or: npm install landa
 ```
 
 ### Building
+
+Landa builds your code using rollup, babel and typescript. Terser is run for production builds, sourcemaps are always generated.
+
+#### Setup the build script
 
 Add this to your scripts:
 
@@ -37,7 +43,7 @@ Add this to your scripts:
 }
 ```
 
-Run a build
+#### Run a build
 
 ```bash
 yarn run build
@@ -48,7 +54,7 @@ yarn run build
 
 Landa contains an express based dev server, that will redirect http requests on a given port (4004 by default) to your code, while reloading if your code changes.
 
-### Setup the dev script
+#### Setup the dev script
 
 Add this to your scripts:
 
@@ -58,18 +64,18 @@ Add this to your scripts:
 }
 ```
 
-### Run your server
+#### Run your server
 
 ```bash
 yarn run dev
 # or: npm run dev
 ```
 
-### Invoke
+### Invocation
 
 Invocation allows you to define different requests by name and invoke your code with any of those requests easily, while the output is written to a json file.
 
-### Setup the invocation script
+#### Setup the invocation script
 
 ```json
 {
@@ -77,7 +83,7 @@ Invocation allows you to define different requests by name and invoke your code 
 }
 ```
 
-### Setup an invocation configuration
+#### Setup an invocation configuration
 
 Add an invocation config to your project, e.g. into `invoke.js` (or `invoke.json`) in your root directory.
 
@@ -92,7 +98,7 @@ module.exports = {
 };
 ```
 
-### Invoke your code
+#### Invoke your code
 
 ```bash
 yarn run invoke helloWorld
