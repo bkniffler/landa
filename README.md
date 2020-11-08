@@ -90,9 +90,21 @@ Add an invocation config to your project, e.g. into `invoke.js` (or `invoke.json
 ```js
 module.exports = {
   helloWorld: {
+    // Request path
     path: '/hello-world',
+    // Optional body
     body: {
       hello: 'world',
+    },
+    // Optional headers
+    headers: {
+      Authorization: 'Bearer ...',
+    },
+    // Optional method, default is GET
+    httpMethod: 'POST',
+    // Optional querystring parameters
+    queryStringParameters: {
+      id: '123',
     },
   },
 };
@@ -109,7 +121,7 @@ yarn run invoke helloWorld
 
 Add optional configuration options to your `package.json > landa`
 
-```
+```json
 // package.json
 {
     ...
