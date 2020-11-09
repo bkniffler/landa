@@ -131,7 +131,7 @@ Add optional configuration options to your `package.json > landa`
     "env": { "DB_URI": "http://localhost:8081" },
     // Dev server port
     "servePort": 4004,
-    // Enable type-checking (disabled by default!)
+    // Enable type-checking (disabled by default!), can be set to "ts2" for `rollup-plugin-typescript2` instead of `@rollup/plugin-typescript`
     "typeCheck": true,
     // Outdir for production builds
     "outDir": "./lib/prod",
