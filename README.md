@@ -30,7 +30,7 @@ These are some example scripts that you can add to `package.json`.
   "build": "landa build",
   // Serve dev build
   "dev": "landa serve --dev",
-  // Serve a production build
+  // Invoke dev build
   "invoke": "landa invoke --dev"
 }
 ```
