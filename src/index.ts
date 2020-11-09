@@ -7,10 +7,15 @@ import { getConfig } from './config';
 (async () => {
   const cwd = process.cwd();
 
-  const { _, d, pc } = yargs
+  const { _, d, pc, t } = yargs
     .option('d', {
       alias: 'dev',
       describe: 'Is Develop?',
+      type: 'boolean',
+    })
+    .option('t', {
+      alias: 'terser',
+      describe: 'Use terser?',
       type: 'boolean',
     })
     .option('pc', {
@@ -22,7 +27,7 @@ import { getConfig } from './config';
     .command('build', 'build the lambda')
     .command('serve', 'serve the lambda').argv;
   const [command, ...rest] = _;
-  const config = getConfig(cwd, command, d === true);
+  const config = getConfig(cwd, command, d === true, t);
 
   if (pc) {
     console.log(JSON.stringify(config, null, 2));
@@ -44,12 +49,12 @@ import { getConfig } from './config';
       await build(config);
     }
   } else if (command === 'invoke') {
-    await build({ ...config, command: 'build', forceDev: true });
-    await invoke(config, ...rest);
+    const outDir = await build({ ...config, command: 'build' });
+    await invoke(outDir, config, ...rest);
   } else if (command === 'build') {
     await build(config);
   } else if (command === 'serve') {
-    await build({ ...config, command: 'watch', forceDev: true });
-    serve(config);
+    const outDir = await build({ ...config, command: 'watch' });
+    serve(outDir, config);
   }
 })();

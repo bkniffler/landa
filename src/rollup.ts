@@ -122,7 +122,7 @@ export async function build(config: LandaConfig) {
         json({}),
         (config.typeCheck ? babel2 : babel)(babelConfig),
         config.typeCheck && typescript(),
-        isProduction && terser(),
+        isProduction && config.terser === true && terser(),
       ],
     };
     const outputOptions: OutputOptions = {
@@ -136,17 +136,16 @@ export async function build(config: LandaConfig) {
       // const { output } = await bundle.generate(outputOptions);
       await bundle.write(outputOptions);
       spinner.succeed('Build successful');
-      spinner.start('Packaging');
-      config.packageJSON.dependencies = { ...dependencies };
-      config.packageJSON.name = `${config.packageJSON.name}-lambda`;
-      delete config.packageJSON.devDependencies;
-      delete config.packageJSON.scripts;
-      writeFileSync(
-        resolve(config.outDir, 'package.json'),
-        JSON.stringify(config.packageJSON, null, 2)
-      );
-
       if (isProduction) {
+        spinner.start('Packaging');
+        config.packageJSON.dependencies = { ...dependencies };
+        config.packageJSON.name = `${config.packageJSON.name}-lambda`;
+        delete config.packageJSON.devDependencies;
+        delete config.packageJSON.scripts;
+        writeFileSync(
+          resolve(config.outDir, 'package.json'),
+          JSON.stringify(config.packageJSON, null, 2)
+        );
         spinner.start('Installing dependencies ...');
         await execa.command('yarn install --no-progress --non-interactive', {
           cwd: config.outDir,
@@ -169,4 +168,5 @@ export async function build(config: LandaConfig) {
     console.info('Error building', config.cwd, config.command);
     console.error(err);
   }
+  return isProduction ? config.outDir : config.devDir;
 }

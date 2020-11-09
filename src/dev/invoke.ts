@@ -2,13 +2,13 @@ import { resolve } from 'path';
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { LandaConfig } from '../config';
 
-export function invoke(config: LandaConfig, command?: string) {
+export function invoke(outDir: string, config: LandaConfig, command?: string) {
   return new Promise((yay, nay) => {
     if (!existsSync(config.invokeOutDir)) {
       mkdirSync(config.invokeOutDir);
     }
 
-    const { handler } = require(config.outDir);
+    const { handler } = require(outDir);
     const payloads = config.invokeConfig;
     if (!payloads) {
       return nay(
@@ -23,7 +23,7 @@ export function invoke(config: LandaConfig, command?: string) {
         path: payload.path,
         body: JSON.stringify(payload.body),
         headers: {
-          Origin: 'http://local.host',
+          origin: 'http://local.host',
           ...(payload.headers || {}),
         },
         httpMethod: payload.method || 'GET',

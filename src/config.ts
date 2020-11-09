@@ -18,7 +18,8 @@ function findEntry(cwd: string) {
 export function getConfig(
   cwd: string,
   command: string,
-  forceDev: boolean
+  forceDev: boolean,
+  terser: boolean
 ): LandaConfig {
   const packageJSON = require(resolve(cwd, 'package.json'));
   const config = packageJSON.landa || {};
@@ -30,6 +31,7 @@ export function getConfig(
   }
   return {
     preload: config.preload ? resolve(cwd, config.preload) : undefined,
+    terser: config.terser === true || terser === true,
     packageJSON,
     command,
     forceDev,
@@ -50,6 +52,7 @@ export function getConfig(
 }
 
 export type LandaConfig = {
+  terser?: boolean;
   preload?: string;
   packageJSON: any;
   command: string;

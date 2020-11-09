@@ -25,6 +25,9 @@ function getPackages(packageJson: any) {
 
 export function getWorkspaces() {
   const packages = getPackages(require(join(rootFolder, 'package.json')));
+  if (!packages) {
+    return [];
+  }
   const paths: string[] = flatten(
     packages.map((name: string) => glob.sync(join(rootFolder, name)))
   ).filter((path: string) => fs.existsSync(join(path, 'package.json')));

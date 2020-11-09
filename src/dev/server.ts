@@ -1,34 +1,24 @@
 import { resolve } from 'path';
 import { createReadStream } from 'fs';
 import crypto from 'crypto';
-import express from 'express';
+import { fastify } from 'fastify';
 import { LandaConfig } from '../config';
 
-export function serve(config: LandaConfig) {
-  const app = express();
+export function serve(outDir: string, config: LandaConfig) {
+  const app = fastify();
 
   for (let key in config.env) {
     process.env[key] = config.env[key];
   }
 
-  const watchFile = resolve(config.devDir, 'index.js');
+  const watchFile = resolve(outDir, 'index.js');
   let lastHash: string = '';
 
-  app.use((req, res, next) => {
-    req.setEncoding('utf8');
-    (req as any).rawBody = '';
-    req.on('data', function (chunk) {
-      (req as any).rawBody += chunk;
-    });
-    req.on('end', function () {
-      next();
-    });
-  });
-  app.use(async (req, res) => {
+  app.all('/', async (req, res) => {
     let handled = false;
     function onResponse(result: any) {
       res
-        .set({
+        .headers({
           'Content-Type': 'application/json',
           ...result.headers,
         })
@@ -42,11 +32,10 @@ export function serve(config: LandaConfig) {
       }
       const { handler } = require(watchFile);
       lastHash = hash;
-      let successResult;
       const result = await handler(
         {
           httpMethod: req.method,
-          path: req.path,
+          path: req.routerPath,
           body: (req as any).rawBody,
           headers: req.headers,
           queryStringParameters: req.query,
