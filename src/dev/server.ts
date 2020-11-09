@@ -14,7 +14,7 @@ export function serve(outDir: string, config: LandaConfig) {
   const watchFile = resolve(outDir, 'index.js');
   let lastHash: string = '';
 
-  app.all('/', async (req, res) => {
+  app.all('/*', async (req, res) => {
     let handled = false;
     function onResponse(result: any) {
       res
@@ -35,8 +35,11 @@ export function serve(outDir: string, config: LandaConfig) {
       const result = await handler(
         {
           httpMethod: req.method,
-          path: req.routerPath,
-          body: (req as any).rawBody,
+          path: req.url,
+          body:
+            req.body && typeof req.body === 'object'
+              ? JSON.stringify(req.body)
+              : req.body,
           headers: req.headers,
           queryStringParameters: req.query,
         },
