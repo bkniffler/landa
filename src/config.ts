@@ -38,7 +38,7 @@ export function getConfig(
     cwd,
     env: config.env || {},
     servePort: config.servePort || 4004,
-    typeCheck: config.typeCheck === true,
+    typeCheck: config.typeCheck === 'ts2' ? 'ts2' : config.typeCheck === true,
     invokeConfigPath: config.invokeConfigPath,
     devDir: resolve(cwd, config.devDir || 'lib/dev'),
     outDir: resolve(cwd, config.outDir || 'lib/prod'),
@@ -60,7 +60,7 @@ export type LandaConfig = {
   cwd: string;
   env: { [s: string]: any };
   servePort: number;
-  typeCheck: boolean;
+  typeCheck: 'ts2' | boolean;
   outDir: string;
   devDir: string;
   invokeConfigPath?: string;

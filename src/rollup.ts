@@ -5,7 +5,8 @@ import replace from '@rollup/plugin-replace';
 //@ts-ignore
 import babel from 'rollup-plugin-babel';
 import babel2, { RollupBabelInputPluginOptions } from '@rollup/plugin-babel';
-import typescript from 'rollup-plugin-typescript2';
+import typescript from '@rollup/plugin-typescript';
+import typescript2 from 'rollup-plugin-typescript2';
 import ora from 'ora';
 import json from '@rollup/plugin-json';
 import alias from '@rollup/plugin-alias';
@@ -121,7 +122,8 @@ export async function build(config: LandaConfig) {
         commonjs({ sourceMap: true }),
         json({}),
         (config.typeCheck ? babel2 : babel)(babelConfig),
-        config.typeCheck && typescript(),
+        config.typeCheck === 'ts2' && typescript2(),
+        config.typeCheck === true && typescript2(),
         isProduction && config.terser === true && terser(),
       ],
     };
