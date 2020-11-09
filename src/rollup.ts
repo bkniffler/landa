@@ -123,7 +123,7 @@ export async function build(config: LandaConfig) {
         json({}),
         (config.typeCheck ? babel2 : babel)(babelConfig),
         config.typeCheck === 'ts2' && typescript2(),
-        config.typeCheck === true && typescript2(),
+        config.typeCheck === true && typescript(),
         isProduction && config.terser === true && terser(),
       ],
     };
