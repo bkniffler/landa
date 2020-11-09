@@ -13,6 +13,18 @@ There is many tools to build nodeJS, but most need either excessiv configuration
 - Production builds including dependencies
 - Invocation with pre-defined request data
 
+## Table of Contents
+
+- Installation
+- Commands
+  - Build
+  - Serve
+  - Invoke
+- Configuration Options
+- Frameworks
+- Dependency Handling
+- Deploying
+
 ## Installation
 
 ```bash
@@ -35,11 +47,11 @@ These are some example scripts that you can add to `package.json`.
 }
 ```
 
-### Building
+### Build
 
 Landa builds your code using rollup, babel and typescript. Terser is run for production builds, sourcemaps are always generated.
 
-### Dev Server
+### Serve
 
 Landa contains an express based dev server, that will redirect http requests on a given port (4004 by default) to your code, while reloading if your code changes.
 
@@ -81,7 +93,7 @@ yarn run invoke helloWorld
 # or: npm run invoke helloWorld
 ```
 
-## Config
+## Configuration Options
 
 Add optional configuration options to your `package.json > landa`
 
@@ -118,11 +130,11 @@ Landa supports most libraries that run on AWS lambda / nodeJS. These frameworks 
 - Middy
 - NestJS
 
-## Dependency handling
+## Dependency Handling
 
 Make sure to add all critical dependencies to your `package.json > dependencies`. `devDependencies` will be ignored for production builds.
 
-## Deploying to AWS
+## Deploying
 
 Landa does not do any deployment. Instead, you can zip the output folder yourself, or use `aws-cdk`.
 
