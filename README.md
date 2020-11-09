@@ -13,77 +13,41 @@ There is many tools to build nodeJS, but most need either excessiv configuration
 - Production builds including dependencies
 - Invocation with pre-defined request data
 
-## Supported libraries
-
-Landa supports most libraries that run on AWS lambda / nodeJS. These frameworks where specifically tested:
-
-- Middy
-- NestJS
-
-## Getting started
-
-### Installation
+## Installation
 
 ```bash
 yarn install landa
 # or: npm install landa
 ```
 
-### Building
+## Commands
 
-Landa builds your code using rollup, babel and typescript. Terser is run for production builds, sourcemaps are always generated.
+These are some example scripts that you can add to `package.json`.
 
-#### Setup the build script
-
-Add this to your scripts:
-
-```json
+```js
 {
-  "build": "landa build"
+  // Build for production
+  "build": "landa build",
+  // Serve dev build
+  "dev": "landa serve --dev",
+  // Serve a production build
+  "invoke": "landa invoke --dev"
 }
 ```
 
-#### Run a build
+### Building
 
-```bash
-yarn run build
-# or: npm run build
-```
+Landa builds your code using rollup, babel and typescript. Terser is run for production builds, sourcemaps are always generated.
 
 ### Dev Server
 
 Landa contains an express based dev server, that will redirect http requests on a given port (4004 by default) to your code, while reloading if your code changes.
 
-#### Setup the dev script
-
-Add this to your scripts:
-
-```json
-{
-  "dev": "landa serve"
-}
-```
-
-#### Run your server
-
-```bash
-yarn run dev
-# or: npm run dev
-```
-
 ### Invocation
 
 Invocation allows you to define different requests by name and invoke your code with any of those requests easily, while the output is written to a json file.
 
-#### Setup the invocation script
-
-```json
-{
-  "invoke": "landa invoke"
-}
-```
-
-#### Setup an invocation configuration
+#### Invocation configuration
 
 Add an invocation config to your project, e.g. into `invoke.js` (or `invoke.json`) in your root directory.
 
@@ -110,7 +74,7 @@ module.exports = {
 };
 ```
 
-#### Invoke your code
+You can call the `helloWorld` invocation by:
 
 ```bash
 yarn run invoke helloWorld
@@ -146,6 +110,13 @@ Add optional configuration options to your `package.json > landa`
   }
 }
 ```
+
+## Frameworks
+
+Landa supports most libraries that run on AWS lambda / nodeJS. These frameworks where specifically tested:
+
+- Middy
+- NestJS
 
 ## Dependency handling
 
