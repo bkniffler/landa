@@ -10,7 +10,7 @@ There is many tools to build nodeJS, but most need either excessiv configuration
 
 - Typescript transpilation, with or without typechecking enabled
 - Dev Server with automatic reloading on changes
-- Production builds including dependencies
+- Production builds including dependency installation
 - Invocation with pre-defined request data
 
 ## Table of Contents
