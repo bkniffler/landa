@@ -32,14 +32,17 @@ export function serve(outDir: string, config: LandaConfig) {
       }
       const { handler } = require(watchFile);
       lastHash = hash;
+      const isJson = req.headers['content-type'] === 'application/json';
+      if (!req.body && isJson) req.body = '{}';
+      const body =
+        req.body && typeof req.body === 'object'
+          ? JSON.stringify(req.body)
+          : req.body;
       const result = await handler(
         {
           httpMethod: req.method,
           path: req.url,
-          body:
-            req.body && typeof req.body === 'object'
-              ? JSON.stringify(req.body)
-              : req.body,
+          body,
           headers: req.headers,
           queryStringParameters: req.query,
         },

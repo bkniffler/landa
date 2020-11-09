@@ -1,6 +1,6 @@
 {
   "name": "landa",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "main": "bin/index.js",
   "license": "MIT",
   "bin": {
