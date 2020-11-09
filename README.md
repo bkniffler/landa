@@ -53,7 +53,7 @@ Landa builds your code using rollup, babel and typescript. Terser is run for pro
 
 ### Serve
 
-Landa contains an express based dev server, that will redirect http requests on a given port (4004 by default) to your code, while reloading if your code changes.
+Landa contains a fastify based dev server, that will redirect http requests on a given port (4004 by default) to your code, while reloading if your code changes.
 
 ### Invocation
 
