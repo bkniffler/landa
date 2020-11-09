@@ -4,7 +4,7 @@ A super simple bundler for nodeJS. Based on rollup. Specially well suited for La
 
 ## Why?
 
-There is many tools to build nodeJS, but most need either excessiv configuration (webpack/rollup/..) or try many problems (serverless). If you'd just like to bundle your typescript so some other tool may deploy it to lambda (e.g. via `aws-cdk`), Landa is a very simple and nice tool.
+There is many tools to build nodeJS, but most need either excessiv configuration (webpack/rollup/..) or try solve many problems (serverless). If you'd just like to bundle your typescript so some other tool may deploy it to lambda (e.g. via `aws-cdk`), Landa is a solid choice.
 
 ## Features
 
