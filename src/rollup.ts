@@ -74,7 +74,6 @@ export async function build(config: LandaConfig) {
     }
     const babelConfig: RollupBabelInputPluginOptions = {
       extensions,
-      babelHelpers: 'bundled',
       include: [config.cwd, ...workspaces].map((path) =>
         resolve(path, 'src/**/*')
       ),
@@ -121,7 +120,9 @@ export async function build(config: LandaConfig) {
         ),
         commonjs({ sourceMap: true }),
         json({}),
-        (config.typeCheck ? babel2 : babel)(babelConfig),
+        config.typeCheck
+          ? babel2({ ...babelConfig, babelHelpers: 'bundled' })
+          : babel(babelConfig),
         config.typeCheck === 'ts2' && typescript2(),
         config.typeCheck === true && typescript(),
         isProduction && config.terser === true && terser(),
