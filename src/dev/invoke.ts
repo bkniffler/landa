@@ -2,13 +2,13 @@ import { resolve } from 'path';
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { LandaConfig } from '../config';
 
-export function invoke(outDir: string, config: LandaConfig, command?: string) {
+export function invoke(config: LandaConfig, command?: string) {
   return new Promise((yay, nay) => {
     if (!existsSync(config.invokeOutDir)) {
       mkdirSync(config.invokeOutDir);
     }
 
-    const { handler } = require(outDir);
+    const { handler } = require(config.outDir);
     const payloads = config.invokeConfig;
     if (!payloads) {
       return nay(

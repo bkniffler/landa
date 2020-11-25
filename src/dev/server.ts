@@ -4,14 +4,14 @@ import crypto from 'crypto';
 import { fastify } from 'fastify';
 import { LandaConfig } from '../config';
 
-export function serve(outDir: string, config: LandaConfig) {
+export function serve(config: LandaConfig) {
   const app = fastify();
 
   for (let key in config.env) {
     process.env[key] = config.env[key];
   }
 
-  const watchFile = resolve(outDir, 'index.js');
+  const watchFile = resolve(config.outDir, 'index.js');
   let lastHash: string = '';
 
   app.all('/*', async (req, res) => {

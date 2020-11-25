@@ -1,5 +1,6 @@
-import { existsSync } from 'fs';
+import { existsSync, readJsonSync } from 'fs-extra';
 import { join, resolve } from 'path';
+import { getWorkspaces } from './get-workspaces';
 
 const entryPaths = [
   'src-lib/index.ts',
@@ -15,13 +16,38 @@ function findEntry(cwd: string) {
     .find((entry) => existsSync(entry));
 }
 
+const workspacePackages = getWorkspaces();
+const extensions = ['.js', '.ts', '.json'];
+function getAllDependencies(dependencies: any = {}): [any, string[]] {
+  let workspaces: string[] = [];
+  let workspaceNames: string[] = [];
+  dependencies = {
+    ...dependencies,
+  };
+  for (let pkg of workspacePackages) {
+    if (dependencies[pkg.name]) {
+      workspaces.push(pkg.path);
+      workspaceNames.push(pkg.name);
+      dependencies = {
+        ...dependencies,
+        ...(pkg.dependencies || {}),
+      };
+    }
+  }
+
+  for (let key of workspaceNames) {
+    delete dependencies[key];
+  }
+  return [dependencies, workspaces];
+}
+
 export function getConfig(
   cwd: string,
   command: string,
   forceDev: boolean,
-  terser: boolean
+  minify: boolean
 ): LandaConfig {
-  const packageJSON = require(resolve(cwd, 'package.json'));
+  const packageJSON = readJsonSync(resolve(cwd, 'package.json'));
   const config = packageJSON.landa || {};
   const entryFile = config.entryFile
     ? resolve(config.entryFile)
@@ -29,19 +55,30 @@ export function getConfig(
   if (!entryFile || !existsSync(entryFile)) {
     throw new Error(`No input found, tried: \n -${entryPaths.join('\n -')}`);
   }
+  const isProduction = command === 'build' && !forceDev;
+
+  const [dependencies, workspaces] = getAllDependencies(
+    packageJSON.dependencies
+  );
   return {
+    isProduction,
     preload: config.preload ? resolve(cwd, config.preload) : undefined,
-    terser: config.terser === true || terser === true,
+    minify: config.minify === true || minify === true,
     packageJSON,
     command,
-    forceDev,
+    dependencies,
+    external: config.external || [],
+    extensions,
+    workspaces,
+    rollup: config.rollup,
     cwd,
     env: config.env || {},
     servePort: config.servePort || 4004,
-    typeCheck: config.typeCheck === 'ts2' ? 'ts2' : config.typeCheck === true,
+    typeCheck: config.typeCheck === true,
     invokeConfigPath: config.invokeConfigPath,
-    devDir: resolve(cwd, config.devDir || 'lib/dev'),
-    outDir: resolve(cwd, config.outDir || 'lib/prod'),
+    outDir: isProduction
+      ? resolve(cwd, config.outDir || 'lib/prod')
+      : resolve(cwd, config.devDir || 'lib/dev'),
     invokeOutDir: resolve(cwd, config.invokeOutDir || 'out'),
     invokeConfig: config.invokeConfigPath
       ? tryRequire(resolve(cwd, config.invokeConfigPath || 'invoke.js'))
@@ -52,17 +89,21 @@ export function getConfig(
 }
 
 export type LandaConfig = {
-  terser?: boolean;
+  isProduction: boolean;
+  minify?: boolean;
   preload?: string;
   packageJSON: any;
   command: string;
-  forceDev: boolean;
+  extensions: string[];
+  dependencies: string[];
+  workspaces: string[];
   cwd: string;
   env: { [s: string]: any };
   servePort: number;
-  typeCheck: 'ts2' | boolean;
+  rollup: 'typescript' | 'typescript2' | 'esbuild';
+  external: string[];
+  typeCheck: boolean;
   outDir: string;
-  devDir: string;
   invokeConfigPath?: string;
   invokeConfig?: any;
   invokeOutDir: string;
