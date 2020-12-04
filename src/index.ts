@@ -63,6 +63,7 @@ import execa from 'execa';
       await build(config);
     }
   } else if (command === 'invoke') {
+    spinner.succeed('Build successful');
     await build({ ...config, command: 'build' });
     await invoke(config, ...rest);
     process.exit(0);
