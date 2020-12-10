@@ -1,3 +1,4 @@
+import 'dotenv';
 import yargs from 'yargs';
 import { build } from './rollup';
 import { getWorkspaces } from './get-workspaces';

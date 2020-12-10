@@ -2,7 +2,7 @@ import { OutputOptions, rollup, RollupOptions, watch } from 'rollup';
 import { build as b2 } from './esbuild';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import replace from '@rollup/plugin-replace';
+// import replace from '@rollup/plugin-replace';
 //@ts-ignore
 import babel from 'rollup-plugin-babel';
 import babel2, { RollupBabelInputPluginOptions } from '@rollup/plugin-babel';
@@ -14,13 +14,9 @@ import builtIn from 'builtin-modules';
 import ora from 'ora';
 import { resolve } from 'path';
 import { terser } from 'rollup-plugin-terser';
-import { rootFolder } from './get-workspaces';
+// import { rootFolder } from './get-workspaces';
 import { LandaConfig } from './config';
 import esbuild from 'rollup-plugin-esbuild';
-
-const dotenv = require('dotenv').config({
-  path: resolve(rootFolder, '.env'),
-});
 
 function getBabelConfig(config: LandaConfig) {
   const presets: (any[] | string)[] = [
@@ -84,15 +80,16 @@ export async function build(config: LandaConfig) {
         extensions: config.extensions,
         preferBuiltins: true,
       }),
-      replace(
-        Object.keys(dotenv.parsed || {}).reduce(
-          (state, key) => ({
-            ...state,
-            [`process.env.${key}`]: JSON.stringify(dotenv.parsed[key]),
-          }),
-          {}
-        )
-      ),
+      /*!config.isProduction &&
+        replace(
+          Object.keys(dotenv.parsed || {}).reduce(
+            (state, key) => ({
+              ...state,
+              [`process.env.${key}`]: JSON.stringify(dotenv.parsed[key]),
+            }),
+            {}
+          )
+        ),*/
       commonjs({ sourceMap: true }),
       json({}),
       !useESBuild &&
