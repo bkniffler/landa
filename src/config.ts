@@ -44,7 +44,7 @@ function getAllDependencies(dependencies: any = {}): [any, string[]] {
 export function getConfig(
   cwd: string,
   command: string,
-  forceDev: boolean,
+  forceEnv: 'production' | 'develop' | undefined,
   minify: boolean
 ): LandaConfig {
   const packageJSON = readJsonSync(resolve(cwd, 'package.json'));
@@ -55,7 +55,8 @@ export function getConfig(
   if (!entryFile || !existsSync(entryFile)) {
     throw new Error(`No input found, tried: \n -${entryPaths.join('\n -')}`);
   }
-  const isProduction = command === 'build' && !forceDev;
+  const isProduction =
+    forceEnv !== undefined ? forceEnv === 'production' : command === 'build';
 
   const [dependencies, workspaces] = getAllDependencies(
     packageJSON.dependencies
@@ -73,7 +74,7 @@ export function getConfig(
     rollup: config.rollup,
     cwd,
     env: config.env || {},
-    servePort: config.servePort || 4004,
+    servePort: process.env.PORT || config.servePort || 4004,
     typeCheck: config.typeCheck === true,
     invokeConfigPath: config.invokeConfigPath,
     outDir: isProduction

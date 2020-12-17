@@ -12,10 +12,15 @@ import execa from 'execa';
 (async () => {
   const cwd = process.cwd();
 
-  const { _, d, pc, t } = yargs
+  const { _, d, pc, p, t } = yargs
     .option('d', {
       alias: 'dev',
       describe: 'Is Develop?',
+      type: 'boolean',
+    })
+    .option('p', {
+      alias: 'prod',
+      describe: 'Is Production?',
       type: 'boolean',
     })
     .option('t', {
@@ -32,7 +37,12 @@ import execa from 'execa';
     .command('build', 'build the lambda')
     .command('serve', 'serve the lambda').argv;
   const [command, ...rest] = _;
-  const config = getConfig(cwd, command, d === true, t);
+  const config = getConfig(
+    cwd,
+    command,
+    d === true ? 'develop' : p === true ? 'production' : undefined,
+    t
+  );
 
   if (pc) {
     console.log(JSON.stringify(config, null, 2));
@@ -89,7 +99,10 @@ import execa from 'execa';
     process.exit(0);
   } else if (command === 'serve') {
     spinner.stop();
-    await build({ ...config, command: 'watch' });
+    await build({
+      ...config,
+      command: config.isProduction ? 'build' : 'watch',
+    });
     serve(config);
   }
 })();

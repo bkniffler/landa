@@ -26,12 +26,14 @@ export function serve(config: LandaConfig) {
         .send(result.body);
     }
     try {
-      const hash = await fileHash(watchFile);
-      if (lastHash && hash !== lastHash) {
-        delete require.cache[require.resolve(watchFile)];
+      if (!config.isProduction) {
+        const hash = await fileHash(watchFile);
+        if (lastHash && hash !== lastHash) {
+          delete require.cache[require.resolve(watchFile)];
+        }
+        lastHash = hash;
       }
       const { handler } = require(watchFile);
-      lastHash = hash;
       const isJson = req.headers['content-type'] === 'application/json';
       if (!req.body && isJson) req.body = '{}';
       const body =
