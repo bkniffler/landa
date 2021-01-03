@@ -45,7 +45,7 @@ export async function emit(
   config: LandaConfig,
   noEmit = true
 ): Promise<Diagnostic[]> {
-  const baseConfig: CompilerOptions = {
+  const baseConfig: CompilerOptions = config.tsConfig || {
     module: ModuleKind.CommonJS,
     // lib: ['ESNext'],
     importHelpers: true,

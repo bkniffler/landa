@@ -1,5 +1,6 @@
 import { existsSync, readJsonSync } from 'fs-extra';
 import { join, resolve } from 'path';
+import { CompilerOptions } from 'typescript';
 import { getWorkspaces } from './get-workspaces';
 
 const entryPaths = [
@@ -48,6 +49,11 @@ export function getConfig(
   minify: boolean
 ): LandaConfig {
   const packageJSON = readJsonSync(resolve(cwd, 'package.json'));
+  const tsConfig =
+    readJsonSync(resolve(cwd, 'tsconfig.json'), {
+      throws: false,
+    }) || undefined;
+  const tsConfigPath = tsConfig ? resolve(cwd, 'tsconfig.json') : undefined;
   const config = packageJSON.landa || {};
   const entryFile = config.entryFile
     ? resolve(config.entryFile)
@@ -73,6 +79,8 @@ export function getConfig(
     workspaces,
     rollup: config.rollup,
     cwd,
+    tsConfig,
+    tsConfigPath,
     env: config.env || {},
     servePort: process.env.PORT || config.servePort || 4004,
     typeCheck: config.typeCheck === true,
@@ -104,6 +112,8 @@ export type LandaConfig = {
   rollup: 'typescript' | 'typescript2' | 'esbuild';
   external: string[];
   typeCheck: boolean;
+  tsConfig?: CompilerOptions;
+  tsConfigPath?: string;
   outDir: string;
   invokeConfigPath?: string;
   invokeConfig?: any;

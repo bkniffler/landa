@@ -26,6 +26,7 @@ export async function build(config: LandaConfig) {
       format: 'cjs',
       incremental,
       target: 'es2019',
+      tsconfig: config.tsConfigPath,
       external: [...config.external, ...builtIn, 'aws-sdk'].concat(
         Object.keys(config.dependencies)
       ),
