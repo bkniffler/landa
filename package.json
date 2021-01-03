@@ -1,6 +1,6 @@
 {
   "name": "landa",
-  "version": "2.0.189",
+  "version": "2.1.0",
   "main": "bin/index.js",
   "license": "MIT",
   "bin": {
@@ -47,6 +47,7 @@
     "rollup-plugin-terser": "7.0.2",
     "rollup-plugin-typescript2": "^0.29.0",
     "source-map-support": "0.5.19",
+    "ts-debounce": "^2.1.0",
     "yargs": "~16.1.1"
   },
   "devDependencies": {
