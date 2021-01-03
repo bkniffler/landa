@@ -47,19 +47,12 @@ export function getConfig(
   command: string,
   forceEnv: 'production' | 'develop' | undefined,
   minify: boolean
-): LandaConfig {
+) {
   const packageJSON = readJsonSync(resolve(cwd, 'package.json'));
-  const tsConfig =
-    readJsonSync(resolve(cwd, 'tsconfig.json'), {
-      throws: false,
-    }) || undefined;
-  const tsConfigPath = tsConfig ? resolve(cwd, 'tsconfig.json') : undefined;
   const config = packageJSON.landa || {};
-  const entryFile = config.entryFile
-    ? resolve(config.entryFile)
-    : findEntry(cwd);
+  let entryFile = config.entryFile ? resolve(config.entryFile) : findEntry(cwd);
   if (!entryFile || !existsSync(entryFile)) {
-    throw new Error(`No input found, tried: \n -${entryPaths.join('\n -')}`);
+    // throw new Error(`No input found, tried: \n -${entryPaths.join('\n -')}`);
   }
   const isProduction =
     forceEnv !== undefined ? forceEnv === 'production' : command === 'build';
@@ -67,7 +60,9 @@ export function getConfig(
   const [dependencies, workspaces] = getAllDependencies(
     packageJSON.dependencies
   );
-  return {
+
+  const typeCheck = config.typeCheck === true;
+  const result: LandaConfig = {
     isProduction,
     preload: config.preload ? resolve(cwd, config.preload) : undefined,
     minify: config.minify === true || minify === true,
@@ -79,11 +74,9 @@ export function getConfig(
     workspaces,
     rollup: config.rollup,
     cwd,
-    tsConfig,
-    tsConfigPath,
     env: config.env || {},
     servePort: process.env.PORT || config.servePort || 4004,
-    typeCheck: config.typeCheck === true,
+    typeCheck,
     invokeConfigPath: config.invokeConfigPath,
     outDir: isProduction
       ? resolve(cwd, config.outDir || 'lib/prod')
@@ -94,7 +87,15 @@ export function getConfig(
       : tryRequire(resolve(cwd, 'invoke.js')) ||
         tryRequire(resolve(cwd, 'invoke.json')),
     entryFile,
+    tsOutDir: resolve(cwd, config.tsOutDir || 'lib/ts'),
   };
+  if (typeCheck) {
+    const tsConfigPath = resolve(cwd, 'tsconfig.json');
+    if (existsSync(tsConfigPath)) {
+      result.tsConfigPath = tsConfigPath;
+    }
+  }
+  return result;
 }
 
 export type LandaConfig = {
@@ -115,6 +116,7 @@ export type LandaConfig = {
   tsConfig?: CompilerOptions;
   tsConfigPath?: string;
   outDir: string;
+  tsOutDir?: string;
   invokeConfigPath?: string;
   invokeConfig?: any;
   invokeOutDir: string;

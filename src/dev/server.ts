@@ -17,13 +17,21 @@ export function serve(config: LandaConfig) {
   app.all('/*', async (req, res) => {
     let handled = false;
     function onResponse(result: any) {
-      res
-        .headers({
-          'Content-Type': 'application/json',
-          ...result.headers,
-        })
-        .status(result.statusCode)
-        .send(result.body);
+      if (result.isBase64Encoded) {
+        const buffer = Buffer.from(result.body, 'base64');
+        res
+          .headers({ 'content-type': 'application/json' })
+          .headers(result.headers)
+          .header('content-length', buffer.byteLength)
+          .status(result.statusCode)
+          .send(buffer);
+      } else {
+        res
+          .headers({ 'content-type': 'application/json' })
+          .headers(result.headers)
+          .status(result.statusCode)
+          .send(result.body);
+      }
     }
     try {
       if (!config.isProduction) {
