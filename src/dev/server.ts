@@ -51,7 +51,7 @@ export function serve(config: LandaConfig) {
       const result = await handler(
         {
           httpMethod: req.method,
-          path: req.url,
+          path: req.url.split('?')[0],
           body,
           headers: req.headers,
           queryStringParameters: req.query,
