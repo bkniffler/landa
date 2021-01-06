@@ -57,6 +57,11 @@ export function getConfig(
   const isProduction =
     forceEnv !== undefined ? forceEnv === 'production' : command === 'build';
 
+  if (isProduction) {
+    process.env.NODE_ENV = 'production';
+  } else {
+    process.env.NODE_ENV = 'development';
+  }
   const [dependencies, workspaces] = getAllDependencies(
     packageJSON.dependencies
   );
